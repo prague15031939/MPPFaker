@@ -17,7 +17,7 @@ namespace FakerDTO
 
         public IntGenerator()
         {
-            _random = new Random(1939);
+            _random = new Random();
         }
 
         public object Generate()
@@ -32,12 +32,12 @@ namespace FakerDTO
 
         public DoubleGenerator()
         {
-            _random = new Random(1938);
+            _random = new Random();
         }
 
         public object Generate()
         {
-            return _random.NextDouble() * 100;
+            return _random.NextDouble() * 113;
         }
     }
 
@@ -47,7 +47,7 @@ namespace FakerDTO
 
         public StringGenerator()
         {
-            _random = new Random(1995);
+            _random = new Random();
         }
 
         public object Generate()
@@ -60,6 +60,37 @@ namespace FakerDTO
                 str += register == 0 ? (char)_random.Next(65, 91) : (char)_random.Next(97, 123);
             }
             return str;
+        }
+    }
+
+    public class ListGenerator
+    {
+        private Random _random;
+
+        public ListGenerator()
+        {
+            _random = new Random();
+        }
+
+        public object Generate<T>()
+        {
+            int ListLength = _random.Next(20);
+            var list = new List<T>();
+            var faker = new Faker();
+
+            if (faker.isDTO(typeof(T)))
+            {
+                for (int i = 0; i < ListLength; i++)
+                    list.Add(faker.Create<T>());
+            }
+            else
+            {
+                IGenerator generator = faker._generators[typeof(T)];
+                for (int i = 0; i < ListLength; i++)
+                    list.Add((T)generator.Generate());
+            }
+
+            return list;
         }
     }
 }

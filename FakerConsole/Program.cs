@@ -24,6 +24,9 @@ namespace FakerConsole
 
     public class Example
     {
+        public List<int> ListIntItem { get; set; }
+        public List<string> ListStringItem;
+        public List<AssosiationExample> ListAssosItem { get; set; }
         public string StringItem { get; set; }
         public int IntNumber { get; set; }
         public double DoubleNumber { get; set; }

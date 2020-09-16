@@ -9,7 +9,12 @@ namespace FakerDTO
 {
     public class Faker
     {
-        private Dictionary<Type, IGenerator> _generators = new Dictionary<Type, IGenerator>();
+        internal Dictionary<Type, IGenerator> _generators = new Dictionary<Type, IGenerator>();
+
+        private enum WorkingMemberType
+        {
+            property, field,
+        }
 
         public Faker()
         {
@@ -31,81 +36,70 @@ namespace FakerDTO
                     MethodInfo SetMethod = ((PropertyInfo)member).GetSetMethod();
                     if (SetMethod != null)
                     { 
-                        FillProperty(TargetObject, (PropertyInfo)member);
+                        FillPropertyOrField(TargetObject, member, ((PropertyInfo)member).PropertyType, WorkingMemberType.property);
                     }
                 }
                 else if (member.MemberType == MemberTypes.Field && ((FieldInfo)member).IsPublic)
                 {
-                    FillField(TargetObject, (FieldInfo)member);
+                    FillPropertyOrField(TargetObject, member, ((FieldInfo)member).FieldType, WorkingMemberType.field);
                 }
             }
 
             return (T)TargetObject;
         }
 
-        private void FillProperty(object target, PropertyInfo property)
+        private void AssignValue(object target, MemberInfo member, object value, WorkingMemberType mType)
         {
-            if (isDTO(property))
+            if (mType == WorkingMemberType.property)
+                (member as PropertyInfo).SetValue(target, value);
+            else if (mType == WorkingMemberType.field)
+                (member as FieldInfo).SetValue(target, value);
+        }
+
+        private void FillPropertyOrField(object target, MemberInfo member, Type ObjectType, WorkingMemberType mType)
+        {
+            if (isDTO(ObjectType))
             {
-                Type PropertyType = property.PropertyType;
-                var SubObject = InvokeSubObjectCreation(PropertyType);
-                property.SetValue(target, SubObject);
+                var SubObject = InvokeCreation(ObjectType, "Create", this);
+                AssignValue(target, member, SubObject, mType);
                 return;
             }
 
-            if (_generators.ContainsKey(property.PropertyType))
+            if (isGenericList(ObjectType))
             {
-                object value = _generators[property.PropertyType].Generate();
-                property.SetValue(target, value);
-            }
-            else
-                property.SetValue(target, null);
-
-                /*else if (property.PropertyType == typeof(List<object>))
-                {
-                    var ListObject = new List<object>();
-                    Type ListElementsType = ListObject.GetType().GetGenericArguments().Single();
-                    for (int i = 0; i < 10; i++)
-                    {
-
-                    }
-                    property.SetValue(target, ListObject);
-                }*/
-            }
-
-        private void FillField(object target, FieldInfo field) 
-        {
-            if (isDTO(field))
-            {
-                Type FieldType = field.FieldType;
-                var SubObject = InvokeSubObjectCreation(FieldType);
-                field.SetValue(target, SubObject);
+                Type ListElementType = ObjectType.GetGenericArguments().Single();
+                var ListObject = InvokeCreation(ListElementType, "Generate", new ListGenerator());
+                AssignValue(target, member, ListObject, mType);
                 return;
             }
 
-            if (_generators.ContainsKey(field.FieldType))
+            if (_generators.ContainsKey(ObjectType))
             {
-                object value = _generators[field.FieldType].Generate();
-                field.SetValue(target, value);
+                object value = _generators[ObjectType].Generate();
+                AssignValue(target, member, value, mType);
             }
             else
-                field.SetValue(target, null);
+            {
+                AssignValue(target, member, null, mType);
+            }
         }
 
-        private bool isDTO(MemberInfo member)
+        private object InvokeCreation(Type MemberType, string MethodName, object PullingObject)
         {
-            if (member.MemberType == MemberTypes.Property && ((PropertyInfo)member).PropertyType.Namespace == "FakerConsole" ||
-                member.MemberType == MemberTypes.Field && ((FieldInfo)member).FieldType.Namespace == "FakerConsole")
-                return true;
-            return false;
-        }
-
-        private object InvokeSubObjectCreation(Type MemberType)
-        {
-            var TypeOfContext = GetType();
-            var method = TypeOfContext.GetMethod("Create");
+            var TypeOfContext = PullingObject.GetType();
+            var method = TypeOfContext.GetMethod(MethodName);
             var GenericMethod = method.MakeGenericMethod(MemberType);
-            return GenericMethod.Invoke(this, null);
+            return GenericMethod.Invoke(PullingObject, null);
+        }
+
+        public bool isDTO(Type type)
+        {
+            return type.Namespace == "FakerConsole";
+        }
+
+        private static bool isGenericList(Type t)
+        {
+            return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>);
         }
     }
 
