@@ -9,6 +9,15 @@ namespace FakerDTO
 {
     public class Faker
     {
+        private Dictionary<Type, IGenerator> _generators = new Dictionary<Type, IGenerator>();
+
+        public Faker()
+        {
+            _generators.Add(typeof(int), new IntGenerator());
+            _generators.Add(typeof(double), new DoubleGenerator());
+            _generators.Add(typeof(string), new StringGenerator());
+        }
+
         public T Create<T>()
         {
             Type TargetType = typeof(T);
@@ -44,13 +53,25 @@ namespace FakerDTO
                 return;
             }
 
-            if (property.PropertyType == typeof(int))
-                property.SetValue(target, 2);
-            else if (property.PropertyType == typeof(double))
-                property.SetValue(target, 13.42);
-            else if (property.PropertyType == typeof(string))
-                property.SetValue(target, "example property string");
-        }
+            if (_generators.ContainsKey(property.PropertyType))
+            {
+                object value = _generators[property.PropertyType].Generate();
+                property.SetValue(target, value);
+            }
+            else
+                property.SetValue(target, null);
+
+                /*else if (property.PropertyType == typeof(List<object>))
+                {
+                    var ListObject = new List<object>();
+                    Type ListElementsType = ListObject.GetType().GetGenericArguments().Single();
+                    for (int i = 0; i < 10; i++)
+                    {
+
+                    }
+                    property.SetValue(target, ListObject);
+                }*/
+            }
 
         private void FillField(object target, FieldInfo field) 
         {
@@ -62,12 +83,13 @@ namespace FakerDTO
                 return;
             }
 
-            if (field.FieldType == typeof(int))
-                field.SetValue(target, 4);
-            else if (field.FieldType == typeof(double))
-                field.SetValue(target, 69.13);
-            else if (field.FieldType == typeof(string))
-                field.SetValue(target, "example field string");
+            if (_generators.ContainsKey(field.FieldType))
+            {
+                object value = _generators[field.FieldType].Generate();
+                field.SetValue(target, value);
+            }
+            else
+                field.SetValue(target, null);
         }
 
         private bool isDTO(MemberInfo member)
@@ -86,4 +108,5 @@ namespace FakerDTO
             return GenericMethod.Invoke(this, null);
         }
     }
+
 }
