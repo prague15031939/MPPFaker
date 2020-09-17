@@ -80,12 +80,15 @@ namespace FakerDTO
 
             if (faker.isDTO(typeof(T)))
             {
-                for (int i = 0; i < ListLength; i++)
-                    list.Add(faker.Create<T>());
+                if (Faker.dodger.CanRecurse(typeof(T)))
+                {
+                    for (int i = 0; i < ListLength; i++)
+                        list.Add(faker.Create<T>());
+                }
             }
             else
             {
-                IGenerator generator = faker._generators[typeof(T)];
+                IGenerator generator = faker.generators[typeof(T)];
                 for (int i = 0; i < ListLength; i++)
                     list.Add((T)generator.Generate());
             }

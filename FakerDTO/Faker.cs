@@ -2,14 +2,13 @@
 using System.Reflection;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FakerDTO
 {
     public class Faker
     {
-        internal Dictionary<Type, IGenerator> _generators = new Dictionary<Type, IGenerator>();
+        internal Dictionary<Type, IGenerator> generators = new Dictionary<Type, IGenerator>();
+        internal static CircularReferencesDodger dodger = new CircularReferencesDodger(3);
 
         private enum WorkingMemberType
         {
@@ -18,14 +17,16 @@ namespace FakerDTO
 
         public Faker()
         {
-            _generators.Add(typeof(int), new IntGenerator());
-            _generators.Add(typeof(double), new DoubleGenerator());
-            _generators.Add(typeof(string), new StringGenerator());
+            generators.Add(typeof(int), new IntGenerator());
+            generators.Add(typeof(double), new DoubleGenerator());
+            generators.Add(typeof(string), new StringGenerator());
         }
 
         public T Create<T>()
         {
             Type TargetType = typeof(T);
+            dodger.AddReference(TargetType);
+            
             var TargetObject = Activator.CreateInstance(TargetType);
             MemberInfo[] members =  TargetType.GetMembers();
 
@@ -45,6 +46,7 @@ namespace FakerDTO
                 }
             }
 
+            dodger.RemoveReference(TargetType);
             return (T)TargetObject;
         }
 
@@ -60,7 +62,10 @@ namespace FakerDTO
         {
             if (isDTO(ObjectType))
             {
-                var SubObject = InvokeCreation(ObjectType, "Create", this);
+                object SubObject = null;
+                if (dodger.CanRecurse(ObjectType))
+                    SubObject = InvokeCreation(ObjectType, "Create", this);
+
                 AssignValue(target, member, SubObject, mType);
                 return;
             }
@@ -73,9 +78,9 @@ namespace FakerDTO
                 return;
             }
 
-            if (_generators.ContainsKey(ObjectType))
+            if (generators.ContainsKey(ObjectType))
             {
-                object value = _generators[ObjectType].Generate();
+                object value = generators[ObjectType].Generate();
                 AssignValue(target, member, value, mType);
             }
             else
@@ -102,5 +107,4 @@ namespace FakerDTO
             return t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>);
         }
     }
-
 }
