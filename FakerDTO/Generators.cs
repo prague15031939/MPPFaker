@@ -1,44 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FakerDTO
 {
+    public class NameAttribute : Attribute
+    {
+        public string GeneratorType;
+    }
+
     public interface IGenerator
     {
         object Generate();
-    }
-
-    public class IntGenerator : IGenerator
-    {
-        private Random _random;
-
-        public IntGenerator()
-        {
-            _random = new Random();
-        }
-
-        public object Generate()
-        {
-            return _random.Next(100);
-        }
-    }
-
-    public class DoubleGenerator : IGenerator
-    {
-        private Random _random;
-
-        public DoubleGenerator()
-        {
-            _random = new Random();
-        }
-
-        public object Generate()
-        {
-            return _random.NextDouble() * 113;
-        }
     }
 
     public class StringGenerator : IGenerator
@@ -78,7 +50,7 @@ namespace FakerDTO
             var list = new List<T>();
             var faker = new Faker();
 
-            if (faker.isDTO(typeof(T)))
+            if (Faker.isDTO(typeof(T)))
             {
                 if (Faker.dodger.CanRecurse(typeof(T)))
                 {
@@ -88,9 +60,12 @@ namespace FakerDTO
             }
             else
             {
-                IGenerator generator = faker.generators[typeof(T)];
-                for (int i = 0; i < ListLength; i++)
-                    list.Add((T)generator.Generate());
+                if (Faker.generators.ContainsKey(typeof(T)))
+                {
+                    IGenerator generator = Faker.generators[typeof(T)];
+                    for (int i = 0; i < ListLength; i++)
+                        list.Add((T)generator.Generate());
+                }
             }
 
             return list;

@@ -27,7 +27,7 @@ namespace FakerConsole
         public string StringItem { get; set; }
         public int IntNumber { get; set; }
         public double DoubleNumber { get; set; }
-        public float FloatNumber;
+        public long LongNumber;
     }
 
     public class AssosiationExample
@@ -43,7 +43,7 @@ namespace FakerConsole
 
     public class CustomXmlSerializer
     {
-        public string Serialize(Example obj)
+        public string Serialize(object obj)
         {
             MemoryStream SerializationStream = new MemoryStream();
             XmlSerializer formatter = new XmlSerializer(typeof(Example));

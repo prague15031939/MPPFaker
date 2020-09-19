@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{1785DEFF-F1CC-4256-9885-7B279E54C35B}</ProjectGuid>
+    <ProjectGuid>{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>FakerDTO</RootNamespace>
-    <AssemblyName>FakerDTO</AssemblyName>
+    <RootNamespace>IntGeneratorPlugin</RootNamespace>
+    <AssemblyName>IntGeneratorPlugin</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FakerDTO">
+      <HintPath>..\FakerDTO\bin\Debug\FakerDTO.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -41,10 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CircularReferencesDodger.cs" />
-    <Compile Include="Faker.cs" />
-    <Compile Include="Generators.cs" />
-    <Compile Include="PluginLoader.cs" />
+    <Compile Include="IntGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakerDTO", "FakerDTO.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FakerConsole", "..\FakerConsole\FakerConsole.csproj", "{FF7DCA09-6A6D-4647-88F6-A4CA9A907362}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoubleGeneratorPlugin", "..\DoubleGeneratorPlugin\DoubleGeneratorPlugin.csproj", "{F90F5727-1FCE-4012-8F96-8D9126C9BA8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntGeneratorPlugin", "..\IntGeneratorPlugin\IntGeneratorPlugin.csproj", "{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{FF7DCA09-6A6D-4647-88F6-A4CA9A907362}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF7DCA09-6A6D-4647-88F6-A4CA9A907362}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF7DCA09-6A6D-4647-88F6-A4CA9A907362}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F90F5727-1FCE-4012-8F96-8D9126C9BA8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F90F5727-1FCE-4012-8F96-8D9126C9BA8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F90F5727-1FCE-4012-8F96-8D9126C9BA8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F90F5727-1FCE-4012-8F96-8D9126C9BA8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

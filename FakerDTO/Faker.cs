@@ -7,7 +7,7 @@ namespace FakerDTO
 {
     public class Faker
     {
-        internal Dictionary<Type, IGenerator> generators = new Dictionary<Type, IGenerator>();
+        internal static Dictionary<Type, IGenerator> generators = null;
         internal static CircularReferencesDodger dodger = new CircularReferencesDodger(3);
 
         private enum WorkingMemberType
@@ -17,9 +17,12 @@ namespace FakerDTO
 
         public Faker()
         {
-            generators.Add(typeof(int), new IntGenerator());
-            generators.Add(typeof(double), new DoubleGenerator());
-            generators.Add(typeof(string), new StringGenerator());
+            if (generators == null)
+            {
+                var loader = new PluginLoader();
+                generators = loader.RefreshPlugins();
+                generators.Add(typeof(string), new StringGenerator());
+            }
         }
 
         public T Create<T>()
@@ -97,7 +100,7 @@ namespace FakerDTO
             return GenericMethod.Invoke(PullingObject, null);
         }
 
-        public bool isDTO(Type type)
+        public static bool isDTO(Type type)
         {
             return type.Namespace == "FakerConsole";
         }
