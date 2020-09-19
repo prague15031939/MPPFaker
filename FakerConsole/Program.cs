@@ -14,7 +14,7 @@ namespace FakerConsole
         {
             var faker = new Faker();
             Example obj = faker.Create<Example>();
-            Console.WriteLine(new CustomXmlSerializer().Serialize(obj));
+            //Console.WriteLine(new CustomXmlSerializer().Serialize(obj));
             Console.ReadKey();
         }
     }
@@ -28,6 +28,7 @@ namespace FakerConsole
         public int IntNumber { get; set; }
         public double DoubleNumber { get; set; }
         public long LongNumber;
+        public DateTime DateTimeItem;
     }
 
     public class AssosiationExample

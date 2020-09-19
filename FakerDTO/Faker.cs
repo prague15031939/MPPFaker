@@ -22,14 +22,17 @@ namespace FakerDTO
                 var loader = new PluginLoader();
                 generators = loader.RefreshPlugins();
                 generators.Add(typeof(string), new StringGenerator());
+                generators.Add(typeof(DateTime), new DateTimeGenerator());
             }
         }
 
         public T Create<T>()
         {
             Type TargetType = typeof(T);
+            if (generators.ContainsKey(TargetType))
+                return (T)generators[TargetType].Generate();
+                
             dodger.AddReference(TargetType);
-            
             var TargetObject = Activator.CreateInstance(TargetType);
             MemberInfo[] members =  TargetType.GetMembers();
 
