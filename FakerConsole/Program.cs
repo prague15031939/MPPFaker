@@ -13,9 +13,11 @@ namespace FakerConsole
         static void Main(string[] args)
         {
             var config = new FakerConfig();
-            config.Add<Example2, string, ShoGenerator>(ex => ex.name);
+            config.Add<Example, string, ShoGenerator>(ex => ex.StringItem);
+            config.Add<Example, int, GacGenerator>(ex => ex.IntNumber);
+            config.Add<Example2, string, PopGenerator>(ex => ex.name);
             var faker = new Faker(config);
-            Example2 obj = faker.Create<Example2>();
+            Example obj = faker.Create<Example>();
             //Console.WriteLine(new CustomXmlSerializer().Serialize(obj));
             Console.ReadKey();
         }
@@ -23,14 +25,16 @@ namespace FakerConsole
 
     public class Example2
     {
-        public string name { get; set; }
+        public string name { get; }
         private int num;
+        public int numa { get; }
         public double doubleItem { get; set; }
 
-        private Example2(string name, int num, double doubleItem)
+        private Example2(string name, int num, double doubleItem, int numa)
         {
             this.name = name;
             this.num = num;
+            this.numa = numa;
             this.doubleItem = doubleItem;
         }
     }
@@ -39,12 +43,13 @@ namespace FakerConsole
     {
         public List<int> ListIntItem { get; set; }
         public List<string> ListStringItem;
-        public List<Example2> ListAssosItem { get; set; }
+        public List<AssosiationExample> ListAssosItem { get; set; }
         public string StringItem { get; set; }
         public int IntNumber { get; set; }
         public double DoubleNumber { get; set; }
         public long LongNumber;
         public DateTime DateTimeItem;
+        public Example2 Example2Item;
     }
 
     public class AssosiationExample
@@ -63,6 +68,22 @@ namespace FakerConsole
         public object Generate()
         {
             return "ShoGeneratorString";
+        }
+    }
+
+    public class PopGenerator : IGenerator
+    {
+        public object Generate()
+        {
+            return "AAaaaPaA";
+        }
+    }
+
+    public class GacGenerator : IGenerator
+    {
+        public object Generate()
+        {
+            return 42;
         }
     }
 

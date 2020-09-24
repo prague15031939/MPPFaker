@@ -7,7 +7,7 @@ namespace FakerDTO
 {
     public class FakerConfig
     {
-        internal Dictionary<(Type, MemberInfo), Type> SettingsDict = new Dictionary<(Type, MemberInfo), Type>();
+        internal Dictionary<(Type ClassType, MemberInfo member), Type> SettingsDict = new Dictionary<(Type, MemberInfo), Type>();
 
         public void Add<TClass, TMember, TGenerator>(Expression<Func<TClass, TMember>> expr)
         {

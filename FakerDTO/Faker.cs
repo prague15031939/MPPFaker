@@ -18,7 +18,7 @@ namespace FakerDTO
 
         public Faker(FakerConfig cfg = null)
         {
-            config = cfg;
+            if (config == null) config = cfg;
             if (generators == null)
             {
                 var loader = new PluginLoader();
@@ -76,11 +76,7 @@ namespace FakerDTO
             var key = (target.GetType(), member);
             if (config != null && config.SettingsDict.ContainsKey(key))
             {
-                Type GeneratorType = config.SettingsDict[key];
-                var generator = Activator.CreateInstance(GeneratorType);
-                MethodInfo GenerateMethod = GeneratorType.GetMethod("Generate");
-                object SubObject = GenerateMethod.Invoke(generator, null);
-
+                object SubObject = InvokeGeneration(key);
                 AssignValue(target, member, SubObject, mType);
                 return;
             }
@@ -130,7 +126,23 @@ namespace FakerDTO
             var сtorParams = new List<object>();
             foreach (ParameterInfo param in ctor.GetParameters())
             {
-                object obj = InvokeCreation(param.ParameterType, "Create", this); 
+                object obj = null;
+                if (config == null)
+                    obj = InvokeCreation(param.ParameterType, "Create", this);
+                else
+                {
+                    foreach (var key in config.SettingsDict.Keys)
+                    {
+                        if (key.ClassType == TargetType && isCtorParameterFit(key, param))
+                        {
+                            obj = InvokeGeneration(key);
+                            break;
+                        }
+                    }
+                }
+                
+                if (obj == null)
+                    obj = InvokeCreation(param.ParameterType, "Create", this); 
                 сtorParams.Add(obj);
             }
 
@@ -143,6 +155,24 @@ namespace FakerDTO
             var method = TypeOfContext.GetMethod(MethodName);
             var GenericMethod = method.MakeGenericMethod(MemberType);
             return GenericMethod.Invoke(PullingObject, null);
+        }
+
+        private object InvokeGeneration((Type ClassType, MemberInfo member) key)
+        {
+            Type GeneratorType = config.SettingsDict[key];
+            var generator = Activator.CreateInstance(GeneratorType);
+            MethodInfo GenerateMethod = GeneratorType.GetMethod("Generate");
+            return GenerateMethod.Invoke(generator, null);
+        }
+
+        private bool isCtorParameterFit((Type ClassType, MemberInfo member) key, ParameterInfo param)
+        {
+            if (key.member.MemberType == MemberTypes.Field && 
+                (key.member as FieldInfo).FieldType == param.ParameterType && (key.member as FieldInfo).Name.ToLower() == param.Name.ToLower() || 
+                key.member.MemberType == MemberTypes.Property && (key.member as PropertyInfo).PropertyType == param.ParameterType && 
+                (key.member as PropertyInfo).Name.ToLower() == param.Name.ToLower()) 
+                return true;
+            return false;
         }
 
         public static bool isDTO(Type type)
