@@ -19,11 +19,25 @@ namespace FakerConsole
         }
     }
 
+    public class Example2
+    {
+        public string name { get; }
+        private int num;
+        public double doubleItem { get; set; }
+
+        private Example2(string name, int num, double doubleItem)
+        {
+            this.name = name;
+            this.num = num;
+            this.doubleItem = doubleItem;
+        }
+    }
+
     public class Example
     {
         public List<int> ListIntItem { get; set; }
         public List<string> ListStringItem;
-        public List<AssosiationExample> ListAssosItem { get; set; }
+        public List<Example2> ListAssosItem { get; set; }
         public string StringItem { get; set; }
         public int IntNumber { get; set; }
         public double DoubleNumber { get; set; }

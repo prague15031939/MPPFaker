@@ -31,10 +31,15 @@ namespace FakerDTO
             Type TargetType = typeof(T);
             if (generators.ContainsKey(TargetType))
                 return (T)generators[TargetType].Generate();
-                
+            if (TargetType.IsValueType || TargetType == typeof(string))
+            {
+                object obj = null;
+                return (T)obj;
+            }
+
+            object TargetObject = CustomCreateInstance(TargetType);
             dodger.AddReference(TargetType);
-            var TargetObject = Activator.CreateInstance(TargetType);
-            MemberInfo[] members =  TargetType.GetMembers();
+            MemberInfo[] members = TargetType.GetMembers();
 
             foreach (MemberInfo member in members)
             {
@@ -95,6 +100,29 @@ namespace FakerDTO
             }
         }
 
+        private object CustomCreateInstance(Type TargetType) 
+        {
+            ConstructorInfo[] TypeCtors = TargetType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
+            if (TypeCtors.Length == 0)
+                  return Activator.CreateInstance(TargetType);
+
+            ConstructorInfo ctor = TypeCtors[0];
+            foreach (ConstructorInfo item in TypeCtors)
+            {
+                if (item.GetParameters().Length > ctor.GetParameters().Length)
+                    ctor = item;
+            }
+
+            var сtorParams = new List<object>();
+            foreach (ParameterInfo param in ctor.GetParameters())
+            {
+                object obj = InvokeCreation(param.ParameterType, "Create", this); 
+                сtorParams.Add(obj);
+            }
+
+            return Activator.CreateInstance(TargetType, BindingFlags.NonPublic | BindingFlags.Instance, null, сtorParams.ToArray(), null);
+        }
+
         private object InvokeCreation(Type MemberType, string MethodName, object PullingObject)
         {
             var TypeOfContext = PullingObject.GetType();
@@ -105,7 +133,9 @@ namespace FakerDTO
 
         public static bool isDTO(Type type)
         {
-            return type.Namespace == "FakerConsole";
+            return !(isGenericList(type) || 
+                    type.IsValueType || 
+                    type == typeof(string));
         }
 
         private static bool isGenericList(Type t)
