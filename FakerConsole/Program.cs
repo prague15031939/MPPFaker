@@ -12,8 +12,10 @@ namespace FakerConsole
     {
         static void Main(string[] args)
         {
-            var faker = new Faker();
-            Example obj = faker.Create<Example>();
+            var config = new FakerConfig();
+            config.Add<Example2, string, ShoGenerator>(ex => ex.name);
+            var faker = new Faker(config);
+            Example2 obj = faker.Create<Example2>();
             //Console.WriteLine(new CustomXmlSerializer().Serialize(obj));
             Console.ReadKey();
         }
@@ -21,7 +23,7 @@ namespace FakerConsole
 
     public class Example2
     {
-        public string name { get; }
+        public string name { get; set; }
         private int num;
         public double doubleItem { get; set; }
 
@@ -54,6 +56,14 @@ namespace FakerConsole
     public class AnotherAssosiationExample
     {
         public AssosiationExample AnotherDTOItem;
+    }
+
+    public class ShoGenerator : IGenerator
+    {
+        public object Generate()
+        {
+            return "ShoGeneratorString";
+        }
     }
 
     public class CustomXmlSerializer

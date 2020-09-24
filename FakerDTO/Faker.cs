@@ -8,6 +8,7 @@ namespace FakerDTO
     public class Faker
     {
         internal static Dictionary<Type, IGenerator> generators = null;
+        internal static FakerConfig config = null;
         internal static CircularReferencesDodger dodger = new CircularReferencesDodger(3);
 
         private enum WorkingMemberType
@@ -15,8 +16,9 @@ namespace FakerDTO
             property, field,
         }
 
-        public Faker()
+        public Faker(FakerConfig cfg = null)
         {
+            config = cfg;
             if (generators == null)
             {
                 var loader = new PluginLoader();
@@ -71,6 +73,18 @@ namespace FakerDTO
 
         private void FillPropertyOrField(object target, MemberInfo member, Type ObjectType, WorkingMemberType mType)
         {
+            var key = (target.GetType(), member);
+            if (config != null && config.SettingsDict.ContainsKey(key))
+            {
+                Type GeneratorType = config.SettingsDict[key];
+                var generator = Activator.CreateInstance(GeneratorType);
+                MethodInfo GenerateMethod = GeneratorType.GetMethod("Generate");
+                object SubObject = GenerateMethod.Invoke(generator, null);
+
+                AssignValue(target, member, SubObject, mType);
+                return;
+            }
+
             if (isDTO(ObjectType))
             {
                 object SubObject = null;

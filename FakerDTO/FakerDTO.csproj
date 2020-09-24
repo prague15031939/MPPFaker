@@ -43,6 +43,7 @@
   <ItemGroup>
     <Compile Include="CircularReferencesDodger.cs" />
     <Compile Include="Faker.cs" />
+    <Compile Include="FakerConfig.cs" />
     <Compile Include="Generators.cs" />
     <Compile Include="PluginLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
