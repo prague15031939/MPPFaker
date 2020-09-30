@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DoubleGeneratorPlugin", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntGeneratorPlugin", "..\IntGeneratorPlugin\IntGeneratorPlugin.csproj", "{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "..\UnitTests\UnitTests.csproj", "{9C3AEEDE-EB15-4833-B639-C7981CC6D38E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BCC9378C-B7AB-41FB-9F96-103DEBE9166C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C3AEEDE-EB15-4833-B639-C7981CC6D38E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C3AEEDE-EB15-4833-B639-C7981CC6D38E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C3AEEDE-EB15-4833-B639-C7981CC6D38E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C3AEEDE-EB15-4833-B639-C7981CC6D38E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

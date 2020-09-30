@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-using System.IO;
-using System.Xml.Serialization;
 using FakerDTO;
 
-namespace FakerConsole
+namespace UnitTests
 {
-    class Program
+    [TestClass]
+    public class FakerTest
     {
-        static void Main(string[] args)
+        [TestInitialize]
+        public void Setup()
         {
             var config = new FakerConfig();
             config.Add<Example, string, ShoGenerator>(ex => ex.StringItem);
@@ -18,9 +18,11 @@ namespace FakerConsole
             config.Add<Example2, string, PopGenerator>(ex => ex.name);
             config.Add<StructExample, int, GacGenerator>(ex => ex.d);
             var faker = new Faker(config);
-            Example obj = faker.Create<Example>();
-            //Console.WriteLine(new CustomXmlSerializer().Serialize(obj));
-            Console.ReadKey();
+        }
+
+        [TestMethod]
+        public void TestThreadCount()
+        {
         }
     }
 
@@ -38,18 +40,18 @@ namespace FakerConsole
 
     public class Example2
     {
-        public string name { get; set; }
+        public string name { get; }
         private int num;
-        public int numa { get; set; }
+        public int numa { get; }
         public double doubleItem { get; set; }
-        public StructExample dadadada { get; set; }
+        public StructExample da;
 
         private Example2(string name, int num, double doubleItem, int numa)
         {
             this.name = name;
-            this.num = 13;
-            this.numa = 42;
-            this.doubleItem = 56.23;
+            this.num = num;
+            this.numa = numa;
+            this.doubleItem = doubleItem;
         }
 
         public Example2(string name)
@@ -94,7 +96,7 @@ namespace FakerConsole
     {
         public object Generate()
         {
-            return "PopGeneratorString";
+            return "AAaaaPaA";
         }
     }
 
@@ -103,17 +105,6 @@ namespace FakerConsole
         public object Generate()
         {
             return 42;
-        }
-    }
-
-    public class CustomXmlSerializer
-    {
-        public string Serialize(object obj)
-        {
-            MemoryStream SerializationStream = new MemoryStream();
-            XmlSerializer formatter = new XmlSerializer(typeof(Example));
-            formatter.Serialize(SerializationStream, obj);
-            return Encoding.Default.GetString(SerializationStream.ToArray());
         }
     }
 }

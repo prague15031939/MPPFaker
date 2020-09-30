@@ -10,6 +10,7 @@ namespace FakerDTO
         internal static Dictionary<Type, IGenerator> generators = null;
         internal static FakerConfig config = null;
         internal static CircularReferencesDodger dodger = new CircularReferencesDodger(3);
+        private CMF cmf = new CMF();
 
         private enum WorkingMemberType
         {
@@ -33,18 +34,19 @@ namespace FakerDTO
             Type TargetType = typeof(T);
             if (generators.ContainsKey(TargetType))
                 return (T)generators[TargetType].Generate();
-            if (TargetType.IsValueType || TargetType == typeof(string))
-            {
-                object obj = null;
-                return (T)obj;
-            }
+            if ((TargetType.IsValueType || TargetType == typeof(string)) && !isStruct(TargetType))
+                return default(T);
 
-            object TargetObject = CustomCreateInstance(TargetType);
+            List<ConstructorInfo> TypeCtors = TargetType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).ToList();
+            object TargetObject = CustomCreateInstance(TargetType, TypeCtors);
+            if (TargetObject == null) return default(T);
             dodger.AddReference(TargetType);
             MemberInfo[] members = TargetType.GetMembers();
 
             foreach (MemberInfo member in members)
             {
+                if (cmf.isMemberFilled(member)) continue;
+
                 if (member.MemberType == MemberTypes.Property)
                 {
                     MethodInfo SetMethod = ((PropertyInfo)member).GetSetMethod();
@@ -59,6 +61,7 @@ namespace FakerDTO
                 }
             }
 
+            cmf.DestroyConstructor(ConstructorDestroyMode.soft);
             dodger.RemoveReference(TargetType);
             return (T)TargetObject;
         }
@@ -110,11 +113,14 @@ namespace FakerDTO
             }
         }
 
-        private object CustomCreateInstance(Type TargetType) 
+        private object CustomCreateInstance(Type TargetType, List<ConstructorInfo> TypeCtors)
         {
-            ConstructorInfo[] TypeCtors = TargetType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance);
-            if (TypeCtors.Length == 0)
-                  return Activator.CreateInstance(TargetType);
+            cmf.NewConstructor();
+            if (TypeCtors.Count == 0)
+            {
+                cmf.DestroyConstructor(ConstructorDestroyMode.hard);
+                return Activator.CreateInstance(TargetType);
+            }
 
             ConstructorInfo ctor = TypeCtors[0];
             foreach (ConstructorInfo item in TypeCtors)
@@ -140,13 +146,29 @@ namespace FakerDTO
                         }
                     }
                 }
-                
+
                 if (obj == null)
-                    obj = InvokeCreation(param.ParameterType, "Create", this); 
+                    obj = InvokeCreation(param.ParameterType, "Create", this);
+
+                MemberInfo member = GetMemberByParam(TargetType, param);
+                cmf.AddMember(member);
                 сtorParams.Add(obj);
             }
 
-            return Activator.CreateInstance(TargetType, BindingFlags.NonPublic | BindingFlags.Instance, null, сtorParams.ToArray(), null);
+            try
+            {
+                return Activator.CreateInstance(TargetType, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, сtorParams.ToArray(), null);
+            }
+            catch
+            {
+                cmf.DestroyConstructor(ConstructorDestroyMode.hard);
+                TypeCtors.Remove(ctor);
+                if (TypeCtors.Count != 0)
+                    return CustomCreateInstance(TargetType, TypeCtors);
+                else
+                    return null;
+            }
+
         }
 
         private object InvokeCreation(Type MemberType, string MethodName, object PullingObject)
@@ -165,6 +187,17 @@ namespace FakerDTO
             return GenerateMethod.Invoke(generator, null);
         }
 
+        private MemberInfo GetMemberByParam(Type TargetType, ParameterInfo param)
+        {
+            foreach (MemberInfo member in TargetType.GetMembers())
+            {
+                if (isCtorParameterFit((TargetType, member), param))
+                    return member;
+            }
+
+            return null;
+        }
+
         private bool isCtorParameterFit((Type ClassType, MemberInfo member) key, ParameterInfo param)
         {
             if (key.member.MemberType == MemberTypes.Field && 
@@ -177,9 +210,12 @@ namespace FakerDTO
 
         public static bool isDTO(Type type)
         {
-            return !(isGenericList(type) || 
-                    type.IsValueType || 
-                    type == typeof(string));
+            return (!(isGenericList(type) || type.IsValueType || type == typeof(string)) || isStruct(type));
+        }
+
+        public static bool isStruct(Type type)
+        {
+            return (type.IsValueType && type.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).Length != 0);
         }
 
         private static bool isGenericList(Type t)
