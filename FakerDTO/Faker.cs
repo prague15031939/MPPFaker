@@ -154,7 +154,7 @@ namespace FakerDTO
             {
                 return Activator.CreateInstance(TargetType, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, сtorParams.ToArray(), null);
             }
-            catch
+            catch (Exception ex)
             {
                 cmf.DestroyConstructor();
                 TypeCtors.Remove(ctor);

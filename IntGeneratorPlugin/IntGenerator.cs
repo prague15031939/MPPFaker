@@ -16,7 +16,7 @@ namespace IntGeneratorPlugin
 
         public object Generate()
         {
-            return _random.Next(100);
+            return _random.Next(1, 1001);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace FakerDTO
 
         public object Generate()
         {
-            int StringLength = _random.Next(20);
+            int StringLength = _random.Next(1, 21);
             string str = String.Empty;
             for (int i = 0; i < StringLength; i++)
             {
@@ -67,7 +67,7 @@ namespace FakerDTO
 
         public object Generate<T>()
         {
-            int ListLength = _random.Next(20);
+            int ListLength = _random.Next(1, 21);
             var list = new List<T>();
             var faker = new Faker();
 

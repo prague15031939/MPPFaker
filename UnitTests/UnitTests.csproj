@@ -54,6 +54,7 @@
   <ItemGroup>
     <Compile Include="FakerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ConfigFakerTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

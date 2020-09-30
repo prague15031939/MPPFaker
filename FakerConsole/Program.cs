@@ -43,7 +43,6 @@ namespace FakerConsole
         private int num;
         public int numa { get; set; }
         public double doubleItem { get; set; }
-        public StructExample dadadada { get; set; }
 
         private Example2(string name, int num, double doubleItem, int numa)
         {
@@ -70,18 +69,6 @@ namespace FakerConsole
         public long LongNumber;
         public DateTime DateTimeItem;
         public Example2 Example2Item;
-        public dad dadwdwfa;
-    }
- 
-    public class dad
-    {
-        public dad()
-        {
-            int y = 0;
-            y = 9 / y;
-        }
-
-        public int sho;
     }
 
     public class AssosiationExample
