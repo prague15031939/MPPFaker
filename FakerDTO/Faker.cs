@@ -61,7 +61,7 @@ namespace FakerDTO
                 }
             }
 
-            cmf.DestroyConstructor(ConstructorDestroyMode.soft);
+            cmf.DestroyConstructor();
             dodger.RemoveReference(TargetType);
             return (T)TargetObject;
         }
@@ -116,11 +116,6 @@ namespace FakerDTO
         private object CustomCreateInstance(Type TargetType, List<ConstructorInfo> TypeCtors)
         {
             cmf.NewConstructor();
-            if (TypeCtors.Count == 0)
-            {
-                cmf.DestroyConstructor(ConstructorDestroyMode.hard);
-                return Activator.CreateInstance(TargetType);
-            }
 
             ConstructorInfo ctor = TypeCtors[0];
             foreach (ConstructorInfo item in TypeCtors)
@@ -161,7 +156,7 @@ namespace FakerDTO
             }
             catch
             {
-                cmf.DestroyConstructor(ConstructorDestroyMode.hard);
+                cmf.DestroyConstructor();
                 TypeCtors.Remove(ctor);
                 if (TypeCtors.Count != 0)
                     return CustomCreateInstance(TargetType, TypeCtors);

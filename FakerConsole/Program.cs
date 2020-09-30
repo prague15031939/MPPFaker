@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using System.Xml.Serialization;
 using FakerDTO;
+using System.Data.Common;
 
 namespace FakerConsole
 {
@@ -69,6 +70,18 @@ namespace FakerConsole
         public long LongNumber;
         public DateTime DateTimeItem;
         public Example2 Example2Item;
+        public dad dadwdwfa;
+    }
+ 
+    public class dad
+    {
+        public dad()
+        {
+            int y = 0;
+            y = 9 / y;
+        }
+
+        public int sho;
     }
 
     public class AssosiationExample

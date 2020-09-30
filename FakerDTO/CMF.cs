@@ -4,15 +4,9 @@ using System.Reflection;
 
 namespace FakerDTO
 {
-    public enum ConstructorDestroyMode
-    {
-        soft, hard
-    }
-
     class CMF
     {
         private Stack<List<MemberInfo>> ConstructorFilledMembers = new Stack<List<MemberInfo>>();
-        private bool anyMemberPeeked = false;
 
         public void NewConstructor()
         {
@@ -29,7 +23,6 @@ namespace FakerDTO
 
         public bool isMemberFilled(MemberInfo member)
         {
-            anyMemberPeeked = true;
             var list = ConstructorFilledMembers.Peek();
             if (list.Contains(member))
                 return true;
@@ -37,15 +30,9 @@ namespace FakerDTO
                 return false;
         }
 
-        public void DestroyConstructor(ConstructorDestroyMode mode)
+        public void DestroyConstructor()
         {
-            if (mode == ConstructorDestroyMode.hard)
-                ConstructorFilledMembers.Pop();
-            else if (mode == ConstructorDestroyMode.soft)
-            {
-                if (anyMemberPeeked)
-                    ConstructorFilledMembers.Pop();
-            }
+            ConstructorFilledMembers.Pop();
         }
     }
 }
