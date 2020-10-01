@@ -7,10 +7,9 @@ namespace FakerDTO
 {
     public class Faker
     {
-        internal static Dictionary<Type, IGenerator> generators = null;
-        internal static FakerConfig config = null;
-        internal static CircularReferencesDodger dodger = new CircularReferencesDodger(3);
-        private CMF cmf = new CMF();
+        internal Dictionary<Type, IGenerator> generators = null;
+        internal FakerConfig config = null;
+        internal CircularReferencesDodger dodger = new CircularReferencesDodger(3);
 
         private enum WorkingMemberType
         {
@@ -45,13 +44,13 @@ namespace FakerDTO
 
             foreach (MemberInfo member in members)
             {
-                if (cmf.isMemberFilled(member)) continue;
+                if (ConstructorFilledMembers.isMemberFilled(TargetObject, member)) continue;
 
                 if (member.MemberType == MemberTypes.Property)
                 {
                     MethodInfo SetMethod = ((PropertyInfo)member).GetSetMethod();
                     if (SetMethod != null)
-                    { 
+                    {
                         FillPropertyOrField(TargetObject, member, ((PropertyInfo)member).PropertyType, WorkingMemberType.property);
                     }
                 }
@@ -61,7 +60,6 @@ namespace FakerDTO
                 }
             }
 
-            cmf.DestroyConstructor();
             dodger.RemoveReference(TargetType);
             return (T)TargetObject;
         }
@@ -97,7 +95,7 @@ namespace FakerDTO
             if (isGenericList(ObjectType))
             {
                 Type ListElementType = ObjectType.GetGenericArguments().Single();
-                var ListObject = InvokeCreation(ListElementType, "Generate", new ListGenerator());
+                var ListObject = InvokeCreation(ListElementType, "Generate", new ListGenerator(this));
                 AssignValue(target, member, ListObject, mType);
                 return;
             }
@@ -115,8 +113,6 @@ namespace FakerDTO
 
         private object CustomCreateInstance(Type TargetType, List<ConstructorInfo> TypeCtors)
         {
-            cmf.NewConstructor();
-
             ConstructorInfo ctor = TypeCtors[0];
             foreach (ConstructorInfo item in TypeCtors)
             {
@@ -144,9 +140,6 @@ namespace FakerDTO
 
                 if (obj == null)
                     obj = InvokeCreation(param.ParameterType, "Create", this);
-
-                MemberInfo member = GetMemberByParam(TargetType, param);
-                cmf.AddMember(member);
                 сtorParams.Add(obj);
             }
 
@@ -154,9 +147,8 @@ namespace FakerDTO
             {
                 return Activator.CreateInstance(TargetType, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance, null, сtorParams.ToArray(), null);
             }
-            catch (Exception ex)
+            catch
             {
-                cmf.DestroyConstructor();
                 TypeCtors.Remove(ctor);
                 if (TypeCtors.Count != 0)
                     return CustomCreateInstance(TargetType, TypeCtors);
@@ -180,17 +172,6 @@ namespace FakerDTO
             var generator = Activator.CreateInstance(GeneratorType);
             MethodInfo GenerateMethod = GeneratorType.GetMethod("Generate");
             return GenerateMethod.Invoke(generator, null);
-        }
-
-        private MemberInfo GetMemberByParam(Type TargetType, ParameterInfo param)
-        {
-            foreach (MemberInfo member in TargetType.GetMembers())
-            {
-                if (isCtorParameterFit((TargetType, member), param))
-                    return member;
-            }
-
-            return null;
         }
 
         private bool isCtorParameterFit((Type ClassType, MemberInfo member) key, ParameterInfo param)

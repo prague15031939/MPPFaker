@@ -64,7 +64,7 @@ namespace UnitTests
         }
         
         [TestMethod]
-        public void TestListCircularReferances()
+        public void TestListCircularReferences()
         {
             ListCircularReferencesClass obj = faker.Create<ListCircularReferencesClass>();
             Assert.AreNotEqual(obj.rec[0].rec, null);

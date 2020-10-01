@@ -59,21 +59,22 @@ namespace FakerDTO
     public class ListGenerator
     {
         private Random _random;
+        private Faker faker;
 
-        public ListGenerator()
+        public ListGenerator(Faker faker)
         {
             _random = new Random();
+            this.faker = faker;
         }
 
         public object Generate<T>()
         {
             int ListLength = _random.Next(1, 21);
             var list = new List<T>();
-            var faker = new Faker();
 
             if (Faker.isDTO(typeof(T)))
             {
-                if (Faker.dodger.CanRecurse(typeof(T)))
+                if (faker.dodger.CanRecurse(typeof(T)))
                 {
                     for (int i = 0; i < ListLength; i++)
                         list.Add(faker.Create<T>());
@@ -81,9 +82,9 @@ namespace FakerDTO
             }
             else
             {
-                if (Faker.generators.ContainsKey(typeof(T)))
+                if (faker.generators.ContainsKey(typeof(T)))
                 {
-                    IGenerator generator = Faker.generators[typeof(T)];
+                    IGenerator generator = faker.generators[typeof(T)];
                     for (int i = 0; i < ListLength; i++)
                         list.Add((T)generator.Generate());
                 }
