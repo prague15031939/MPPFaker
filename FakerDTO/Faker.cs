@@ -30,21 +30,25 @@ namespace FakerDTO
 
         public T Create<T>()
         {
-            Type TargetType = typeof(T);
+            return (T)CreateByType(typeof(T));
+        }
+
+        internal dynamic CreateByType(Type TargetType)
+        {
             if (generators.ContainsKey(TargetType))
-                return (T)generators[TargetType].Generate();
+                return generators[TargetType].Generate();
             if ((TargetType.IsValueType || TargetType == typeof(string)) && !isStruct(TargetType))
-                return default(T);
+                return GetDefault(TargetType);
 
             List<ConstructorInfo> TypeCtors = TargetType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance).ToList();
             object TargetObject = CustomCreateInstance(TargetType, TypeCtors);
-            if (TargetObject == null) return default(T);
+            if (TargetObject == null) return GetDefault(TargetType);
             dodger.AddReference(TargetType);
             MemberInfo[] members = TargetType.GetMembers();
 
             foreach (MemberInfo member in members)
             {
-                if (ConstructorFilledMembers.isMemberFilled(TargetObject, member)) continue;
+                if (isMemberFilled(TargetObject, member)) continue;
 
                 if (member.MemberType == MemberTypes.Property)
                 {
@@ -61,7 +65,7 @@ namespace FakerDTO
             }
 
             dodger.RemoveReference(TargetType);
-            return (T)TargetObject;
+            return TargetObject;
         }
 
         private void AssignValue(object target, MemberInfo member, object value, WorkingMemberType mType)
@@ -77,7 +81,7 @@ namespace FakerDTO
             var key = (target.GetType(), member);
             if (config != null && config.SettingsDict.ContainsKey(key))
             {
-                object SubObject = InvokeGeneration(key);
+                object SubObject = InvokeConfigGeneration(key);
                 AssignValue(target, member, SubObject, mType);
                 return;
             }
@@ -86,7 +90,7 @@ namespace FakerDTO
             {
                 object SubObject = null;
                 if (dodger.CanRecurse(ObjectType))
-                    SubObject = InvokeCreation(ObjectType, "Create", this);
+                    SubObject = CreateByType(ObjectType);
 
                 AssignValue(target, member, SubObject, mType);
                 return;
@@ -94,8 +98,7 @@ namespace FakerDTO
 
             if (isGenericList(ObjectType))
             {
-                Type ListElementType = ObjectType.GetGenericArguments().Single();
-                var ListObject = InvokeCreation(ListElementType, "Generate", new ListGenerator(this));
+                var ListObject = new ListGenerator(this, ObjectType).Generate();
                 AssignValue(target, member, ListObject, mType);
                 return;
             }
@@ -125,21 +128,21 @@ namespace FakerDTO
             {
                 object obj = null;
                 if (config == null)
-                    obj = InvokeCreation(param.ParameterType, "Create", this);
+                    obj = CreateByType(param.ParameterType);
                 else
                 {
                     foreach (var key in config.SettingsDict.Keys)
                     {
                         if (key.ClassType == TargetType && isCtorParameterFit(key, param))
                         {
-                            obj = InvokeGeneration(key);
+                            obj = InvokeConfigGeneration(key);
                             break;
                         }
                     }
                 }
 
                 if (obj == null)
-                    obj = InvokeCreation(param.ParameterType, "Create", this);
+                    obj = CreateByType(param.ParameterType);
                 сtorParams.Add(obj);
             }
 
@@ -158,20 +161,40 @@ namespace FakerDTO
 
         }
 
-        private object InvokeCreation(Type MemberType, string MethodName, object PullingObject)
-        {
-            var TypeOfContext = PullingObject.GetType();
-            var method = TypeOfContext.GetMethod(MethodName);
-            var GenericMethod = method.MakeGenericMethod(MemberType);
-            return GenericMethod.Invoke(PullingObject, null);
-        }
-
-        private object InvokeGeneration((Type ClassType, MemberInfo member) key)
+        private object InvokeConfigGeneration((Type ClassType, MemberInfo member) key)
         {
             Type GeneratorType = config.SettingsDict[key];
             var generator = Activator.CreateInstance(GeneratorType);
-            MethodInfo GenerateMethod = GeneratorType.GetMethod("Generate");
-            return GenerateMethod.Invoke(generator, null);
+            return (generator as IGenerator).Generate();
+        }
+
+        public bool isMemberFilled(object TargetObject, MemberInfo member)
+        {
+            switch (member.MemberType)
+            {
+                case MemberTypes.Property:
+                    {
+                        object TargetValue = ((PropertyInfo)member).GetValue(TargetObject);
+                        object DefaultValue = GetDefault(((PropertyInfo)member).PropertyType);
+                        return !Equals(DefaultValue, TargetValue);
+                    }
+                case MemberTypes.Field:
+                    {
+                        object TargetValue = ((FieldInfo)member).GetValue(TargetObject);
+                        object DefaultValue = GetDefault(((FieldInfo)member).FieldType);
+                        return !Equals(DefaultValue, TargetValue);
+                    }
+            }
+
+            return false;
+        }
+
+        public object GetDefault(Type t)
+        {
+            if (t.IsValueType)
+                return Activator.CreateInstance(t);
+            else
+                return null;
         }
 
         private bool isCtorParameterFit((Type ClassType, MemberInfo member) key, ParameterInfo param)

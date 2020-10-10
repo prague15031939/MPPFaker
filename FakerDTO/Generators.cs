@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 namespace FakerDTO
 {
@@ -10,7 +12,7 @@ namespace FakerDTO
 
     public interface IGenerator
     {
-        object Generate();
+        dynamic Generate();
     }
 
     public class StringGenerator : IGenerator
@@ -56,37 +58,40 @@ namespace FakerDTO
         }
     }
 
-    public class ListGenerator
+    public class ListGenerator : IGenerator
     {
         private Random _random;
         private Faker faker;
+        private Type ObjectType;
 
-        public ListGenerator(Faker faker)
+        public ListGenerator(Faker faker, Type ObjectType)
         {
             _random = new Random();
             this.faker = faker;
+            this.ObjectType = ObjectType;
         }
 
-        public object Generate<T>()
+        public object Generate()
         {
-            int ListLength = _random.Next(1, 21);
-            var list = new List<T>();
+            Type ItemsType = ObjectType.GetGenericArguments().Single();
+            dynamic list = Activator.CreateInstance(ObjectType);
 
-            if (Faker.isDTO(typeof(T)))
+            int ListLength = _random.Next(1, 21);
+            if (Faker.isDTO(ItemsType))
             {
-                if (faker.dodger.CanRecurse(typeof(T)))
+                if (faker.dodger.CanRecurse(ItemsType))
                 {
                     for (int i = 0; i < ListLength; i++)
-                        list.Add(faker.Create<T>());
+                        list.Add(faker.CreateByType(ItemsType));
                 }
             }
             else
             {
-                if (faker.generators.ContainsKey(typeof(T)))
+                if (faker.generators.ContainsKey(ItemsType))
                 {
-                    IGenerator generator = faker.generators[typeof(T)];
+                    IGenerator generator = faker.generators[ItemsType];
                     for (int i = 0; i < ListLength; i++)
-                        list.Add((T)generator.Generate());
+                        list.Add(generator.Generate());
                 }
             }
 

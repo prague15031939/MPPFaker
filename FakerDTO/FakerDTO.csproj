@@ -42,7 +42,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CircularReferencesDodger.cs" />
-    <Compile Include="ConstructorFilledMembers.cs" />
     <Compile Include="Faker.cs" />
     <Compile Include="FakerConfig.cs" />
     <Compile Include="Generators.cs" />
